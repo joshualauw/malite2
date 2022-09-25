@@ -235,7 +235,7 @@ export const getStaticProps: GetStaticProps = async (context) => {
                 animes,
                 message: "data fetch succesful",
             },
-            revalidate: 86400,
+            revalidate: 30,
         };
     } catch (e: any) {
         return {
@@ -243,7 +243,7 @@ export const getStaticProps: GetStaticProps = async (context) => {
                 animes: [],
                 message: "data fetch failed",
             },
-            revalidate: 86400,
+            revalidate: 30,
         };
     }
 };

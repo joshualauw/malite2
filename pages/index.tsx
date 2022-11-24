@@ -53,6 +53,7 @@ const Home: NextPage<{ animes: Anime[]; message: string }> = (props) => {
     };
 
     const formatDate = (date: string) => {
+        if (date == "-") return date;
         const dates = date.split("-");
         return dates[2] + "/" + dates[1] + "/" + dates[0].substring(2, 4);
     }
@@ -77,7 +78,7 @@ const Home: NextPage<{ animes: Anime[]; message: string }> = (props) => {
         })
         .filter((a) => a.title.toLowerCase().includes(searchTerm.toLowerCase()))
         .sort((a, b) => {
-            if (sortTerm == "Title") {
+            if (sortTerm == "title") {
                 return 0;
             } else if (sortTerm == "score") {
                 return b.score - a.score;

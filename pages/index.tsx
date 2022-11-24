@@ -7,7 +7,7 @@ import Anime from "../types/Anime";
 const Home: NextPage<{ animes: Anime[]; message: string }> = (props) => {
     //
     const [searchTerm, setSearchTerm] = useState<string>("");
-    const [sortTerm, setSortTerm] = useState<string>("Title");
+    const [sortTerm, setSortTerm] = useState<string>("Date");
     const [filterTerm, setFilterTerm] = useState<string>("All");
     const [reversed, setReversed] = useState<boolean>(false);
     const [sliceIndex, setSliceIndex] = useState<number>(0);
@@ -51,6 +51,11 @@ const Home: NextPage<{ animes: Anime[]; message: string }> = (props) => {
         const res = await axios.get("https://api.jikan.moe/v4/anime/" + id);
         window.open(res.data.data.url, "_blank");
     };
+
+    const formatDate = (date: string) => {
+        const dates = date.split("-");
+        return dates[2] + "/" + dates[1] + "/" + dates[0].substring(2, 4);
+    }
 
     const getStatusFormat = (status: string) => {
         if (status == "completed") return { color: "text-blue-500", text: "completed" };
@@ -139,9 +144,9 @@ const Home: NextPage<{ animes: Anime[]; message: string }> = (props) => {
                             }}
                             className="rounded-full px-3 py-1.5 md:py-1 outline-none w-80 md:w-36 text-gray-700"
                         >
-                            <option defaultValue="title">Title</option>
+                            <option defaultValue="date">Date</option>
+                            <option value="title">Title</option>
                             <option value="score">Score</option>
-                            <option value="date">Date</option>
                         </select>
                     </div>
                 </div>
@@ -169,7 +174,7 @@ const Home: NextPage<{ animes: Anime[]; message: string }> = (props) => {
                                     <img src={a.picture} className="w-20 h-full rounded-sm" alt={a.title} />
                                     <div>
                                         <p className="font-semibold">{a.title}</p>
-                                        <p className="text-gray-500">{a.finished_date}</p>
+                                        <p className="text-gray-500">{formatDate(a.finished_date)}</p>
                                         <p>
                                             Score: <i className="fa-solid fa-star text-yellow-400"></i>
                                             {a.score}

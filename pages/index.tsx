@@ -1,8 +1,9 @@
 /* eslint-disable @next/next/no-img-element */
 import { useEffect, useState } from "react";
-import { GetStaticProps, NextPage } from "next";
+import { GetServerSideProps, GetStaticProps, NextPage } from "next";
 import axios from "axios";
 import Anime from "../types/Anime";
+import AnimeCard from "../components/AnimeCard";
 
 const Home: NextPage<{ animes: Anime[]; message: string }> = (props) => {
     //
@@ -14,7 +15,9 @@ const Home: NextPage<{ animes: Anime[]; message: string }> = (props) => {
     const [scrollable, setScrollable] = useState<boolean>(false);
     const [page, setPage] = useState<number>(1);
 
-    const sliceCount = 20;
+    const sliceCount = 18;
+    const totalItems = props.animes.length;
+    const totalPages = Math.ceil(props.animes.length / sliceCount);
 
     useEffect(() => {
         window.onscroll = function () {
@@ -47,27 +50,8 @@ const Home: NextPage<{ animes: Anime[]; message: string }> = (props) => {
         }
     };
 
-    const toMal = async (id: number) => {
-        const res = await axios.get("https://api.jikan.moe/v4/anime/" + id);
-        window.open(res.data.data.url, "_blank");
-    };
+    let sorted = [...props.animes] as Anime[];
 
-    const formatDate = (date: string) => {
-        if (date == "-") return date;
-        const dates = date.split("-");
-        return dates[2] + "/" + dates[1] + "/" + dates[0].substring(2, 4);
-    }
-
-    const getStatusFormat = (status: string) => {
-        if (status == "completed") return { color: "text-blue-500", text: "completed" };
-        if (status == "watching") return { color: "text-green-500", text: "watching" };
-        if (status == "on_hold") return { color: "text-yellow-500", text: "on hold" };
-        if (status == "plan_to_watch") return { color: "text-gray-400", text: "plan to watch" };
-        if (status == "dropped") return { color: "text-red-500", text: "dropped" };
-    };
-
-    let sorted = [] as Anime[];
-    sorted.push(...props.animes);
     sorted = sorted
         .filter((a) => {
             if (filterTerm != "All") {
@@ -162,35 +146,10 @@ const Home: NextPage<{ animes: Anime[]; message: string }> = (props) => {
                         <i className="fa-solid fa-arrows-up-down"></i> reverse
                     </button>
                 </div>
-                <div className="space-y-5">
-                    {sorted.slice(sliceIndex, sliceIndex + sliceCount).map((a) => {
-                        const status = getStatusFormat(a.status);
-                        return (
-                            <div
-                                key={a.id}
-                                onClick={() => toMal(a.id)}
-                                className="rounded-lg bg-slate-100 p-5 mb-5 cursor-pointer hover:translate-y-1"
-                            >
-                                <div className="flex items-center justify-start space-x-5">
-                                    <img src={a.picture} className="w-20 h-full rounded-sm" alt={a.title} />
-                                    <div>
-                                        <p className="font-semibold">{a.title}</p>
-                                        <p className="text-gray-500">{formatDate(a.finished_date)}</p>
-                                        <p>
-                                            Score: <i className="fa-solid fa-star text-yellow-400"></i>
-                                            {a.score}
-                                        </p>
-                                        <div className="flex items-center mt-2 space-x-3">
-                                            <p>
-                                                Status:
-                                                <span className={`${status.color} font-semibold`}> {status.text}</span>
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        );
-                    })}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3  gap-5">
+                    {sorted.slice(sliceIndex, sliceIndex + sliceCount).map((a) => (
+                        <AnimeCard key={a.id} anime={a} />
+                    ))}
                 </div>
                 <div className="flex justify-center items-center space-x-4">
                     <button
@@ -216,11 +175,15 @@ const Home: NextPage<{ animes: Anime[]; message: string }> = (props) => {
     );
 };
 
-export const getStaticProps: GetStaticProps = async (context) => {
+export const getServerSideProps: GetServerSideProps = async (context) => {
     try {
         const result = await axios.get(
-            `https://api.myanimelist.net/v2/users/Winter_Fox/animelist?limit=1000&fields=list_status`,
+            `https://api.myanimelist.net/v2/users/Winter_Fox/animelist`,
             {
+                params: {
+                    limit: 1000,
+                    fields: "list_status",
+                },
                 headers: {
                     "X-MAL-CLIENT-ID": process.env.MAL_CLIENT_ID,
                 },
@@ -241,7 +204,6 @@ export const getStaticProps: GetStaticProps = async (context) => {
                 animes,
                 message: "data fetch succesful",
             },
-            revalidate: 86400,
         };
     } catch (e: any) {
         return {
@@ -249,7 +211,6 @@ export const getStaticProps: GetStaticProps = async (context) => {
                 animes: [],
                 message: "data fetch failed",
             },
-            revalidate: 86400,
         };
     }
 };

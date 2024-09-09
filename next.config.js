@@ -3,7 +3,7 @@ const nextConfig = {
     reactStrictMode: true,
     swcMinify: true,
     images: {
-        domains: ["api-cdn.myanimelist.net"],
+        domains: ["api-cdn.myanimelist.net", "cdn.myanimelist.net"],
     },
 };
 

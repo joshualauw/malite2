@@ -15,10 +15,9 @@ const Home: NextPage<{ data: Anime[]; message: string }> = (props) => {
     const [sliceIndex, setSliceIndex] = useState<number>(0);
     const [scrollable, setScrollable] = useState<boolean>(false);
     const [animes, setAnimes] = useState<Anime[]>(props.data);
+    const [totalPages, setTotalPages] = useState(0);
 
     const sliceCount = 15;
-    const totalItems = props.data.length;
-    const totalPages = Math.ceil(totalItems / sliceCount);
 
     useEffect(() => {
         window.onscroll = function () {
@@ -28,7 +27,8 @@ const Home: NextPage<{ data: Anime[]; message: string }> = (props) => {
                 setScrollable(false);
             }
         };
-    });
+        setTotalPages(Math.ceil(props.data.length / sliceCount));
+    }, [props.data.length]);
 
     const scrollToTop = () => {
         document.body.scrollTop = 0;
@@ -68,6 +68,7 @@ const Home: NextPage<{ data: Anime[]; message: string }> = (props) => {
         }
 
         setAnimes(filtered);
+        setTotalPages(Math.ceil(filtered.length / sliceCount));
     }, [searchTerm, filterTerm, reversed, sortTerm, props.data]);
 
     return (

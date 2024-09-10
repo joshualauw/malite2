@@ -1,11 +1,12 @@
 /* eslint-disable @next/next/no-img-element */
 import { useEffect, useState } from "react";
-import { GetServerSideProps, GetStaticProps, NextPage } from "next";
+import { GetServerSideProps, NextPage } from "next";
 import axios from "axios";
 import Anime from "../types/Anime";
 import AnimeCard from "../components/AnimeCard";
+import ReactPaginate from "react-paginate";
 
-const Home: NextPage<{ animes: Anime[]; message: string }> = (props) => {
+const Home: NextPage<{ data: Anime[]; message: string }> = (props) => {
     //
     const [searchTerm, setSearchTerm] = useState<string>("");
     const [sortTerm, setSortTerm] = useState<string>("Date");
@@ -13,11 +14,11 @@ const Home: NextPage<{ animes: Anime[]; message: string }> = (props) => {
     const [reversed, setReversed] = useState<boolean>(false);
     const [sliceIndex, setSliceIndex] = useState<number>(0);
     const [scrollable, setScrollable] = useState<boolean>(false);
-    const [page, setPage] = useState<number>(1);
+    const [animes, setAnimes] = useState<Anime[]>(props.data);
 
-    const sliceCount = 18;
-    const totalItems = props.animes.length;
-    const totalPages = Math.ceil(props.animes.length / sliceCount);
+    const sliceCount = 15;
+    const totalItems = props.data.length;
+    const totalPages = Math.ceil(totalItems / sliceCount);
 
     useEffect(() => {
         window.onscroll = function () {
@@ -34,58 +35,45 @@ const Home: NextPage<{ animes: Anime[]; message: string }> = (props) => {
         document.documentElement.scrollTop = 0;
     };
 
-    const handlePrev = () => {
-        if (page > 1) {
-            setSliceIndex(sliceIndex - sliceCount);
-            setPage(page - 1);
-            window.scrollTo({ top: 0 });
-        }
+    const handlePageClick = (event: any) => {
+        setSliceIndex(parseInt(event.selected) * sliceCount);
+
+        window.scrollTo({ top: 0 });
     };
 
-    const handleNext = () => {
-        if (sliceIndex + sliceCount <= sorted.length) {
-            setSliceIndex(sliceIndex + sliceCount);
-            setPage(page + 1);
-            window.scrollTo({ top: 0 });
+    useEffect(() => {
+        let filtered = props.data
+            .filter((a) => {
+                if (filterTerm != "All") {
+                    return a.status == filterTerm;
+                } else {
+                    return 1;
+                }
+            })
+            .filter((a) => a.title.toLowerCase().includes(searchTerm.toLowerCase()))
+            .sort((a, b) => {
+                if (sortTerm == "title") {
+                    return 0;
+                } else if (sortTerm == "score") {
+                    return b.score - a.score;
+                } else {
+                    let aa = a.finished_date.split("/").reverse().join(),
+                        bb = b.finished_date.split("/").reverse().join();
+                    return aa > bb ? -1 : aa < bb ? 1 : 0;
+                }
+            });
+
+        if (reversed) {
+            filtered = filtered.reverse();
         }
-    };
 
-    let sorted = [...props.animes] as Anime[];
-
-    sorted = sorted
-        .filter((a) => {
-            if (filterTerm != "All") {
-                return a.status == filterTerm;
-            } else {
-                return 1;
-            }
-        })
-        .filter((a) => a.title.toLowerCase().includes(searchTerm.toLowerCase()))
-        .sort((a, b) => {
-            if (sortTerm == "title") {
-                return 0;
-            } else if (sortTerm == "score") {
-                return b.score - a.score;
-            } else {
-                let aa = a.finished_date.split("/").reverse().join(),
-                    bb = b.finished_date.split("/").reverse().join();
-                return aa > bb ? -1 : aa < bb ? 1 : 0;
-            }
-        });
-    if (reversed) sorted = sorted.reverse();
+        setAnimes(filtered);
+    }, [searchTerm, filterTerm, reversed, sortTerm, props.data]);
 
     return (
         <>
-            <div
-                onClick={() => scrollToTop()}
-                className={`${
-                    scrollable ? "flex" : "hidden"
-                } fixed w-16 h-16 right-6 bottom-6 bg-sky-600 text-white rounded-full flex justify-center items-center z-20 cursor-pointer transition-all duration-200 hover:bg-sky-700`}
-            >
-                <i className="fa-sharp fa-solid fa-arrow-up fa-lg"></i>
-            </div>
             <div className="w-full py-4 bg-sky-600 text-white flex flex-col md:flex-row justify-between items-center shadow-lg px-10">
-                <h1 className="text-white text-xl font-bold mb-4 md:mb-0">MALITE 2</h1>
+                <h1 className="text-white text-xl font-bold mb-4 md:mb-0">MALite 2</h1>
                 <div className="flex flex-col md:flex-row justify-center items-center mb-4 md:mb-0 space-y-4 md:space-y-0 md:space-x-5">
                     <div className="flex items-center space-x-2">
                         <i className="fa-solid fa-magnifying-glass"></i>
@@ -94,10 +82,9 @@ const Home: NextPage<{ animes: Anime[]; message: string }> = (props) => {
                             value={searchTerm}
                             onInput={(e) => {
                                 setSearchTerm(e.currentTarget.value);
-                                setPage(1);
                                 setSliceIndex(0);
                             }}
-                            className="rounded-full px-3 py-1.5 md:py-1 outline-none w-80 md:w-64 text-gray-700"
+                            className="rounded-full px-3 py-1 outline-none w-80 md:w-64 text-gray-700"
                             placeholder="Search anime in my list..."
                         />
                     </div>
@@ -106,10 +93,9 @@ const Home: NextPage<{ animes: Anime[]; message: string }> = (props) => {
                         <select
                             onInput={(e) => {
                                 setFilterTerm(e.currentTarget.value);
-                                setPage(1);
                                 setSliceIndex(0);
                             }}
-                            className="rounded-full px-3 py-1.5 md:py-1 outline-none w-80 md:w-36 text-gray-700"
+                            className="rounded-full px-3 py-1 outline-none w-80 md:w-36 text-gray-700"
                         >
                             <option defaultValue="all">All</option>
                             <option value="completed">Completed</option>
@@ -124,10 +110,9 @@ const Home: NextPage<{ animes: Anime[]; message: string }> = (props) => {
                         <select
                             onInput={(e) => {
                                 setSortTerm(e.currentTarget.value);
-                                setPage(1);
                                 setSliceIndex(0);
                             }}
-                            className="rounded-full px-3 py-1.5 md:py-1 outline-none w-80 md:w-36 text-gray-700"
+                            className="rounded-full px-3 py-1 outline-none w-80 md:w-36 text-gray-700"
                         >
                             <option defaultValue="date">Date</option>
                             <option value="title">Title</option>
@@ -138,7 +123,7 @@ const Home: NextPage<{ animes: Anime[]; message: string }> = (props) => {
             </div>
             <div className="m-6 md:m-8 space-y-8">
                 <div className="flex items-center justify-between">
-                    <p className="font-bold text-xl">{sorted.length} records found</p>
+                    <p className="font-bold text-xl">{animes.length} records found</p>
                     <button
                         onClick={() => setReversed(!reversed)}
                         className="px-5 py-2 rounded-full bg-sky-600 text-white cursor-pointer hover:bg-sky-700 transition-all duration-200"
@@ -146,31 +131,38 @@ const Home: NextPage<{ animes: Anime[]; message: string }> = (props) => {
                         <i className="fa-solid fa-arrows-up-down"></i> reverse
                     </button>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3  gap-5">
-                    {sorted.slice(sliceIndex, sliceIndex + sliceCount).map((a) => (
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                    {animes.slice(sliceIndex, sliceIndex + sliceCount).map((a) => (
                         <AnimeCard key={a.id} anime={a} />
                     ))}
                 </div>
-                <div className="flex justify-center items-center space-x-4">
-                    <button
-                        onClick={() => handlePrev()}
-                        className="px-5 py-2 rounded-full bg-sky-600 text-white cursor-pointer hover:bg-sky-700 transition-all duration-200"
-                    >
-                        <i className="fa-solid fa-chevron-left"></i> prev
-                    </button>
-                    <p className="text-lg font-semibold">{page}</p>
-                    <button
-                        onClick={() => handleNext()}
-                        className="px-5 py-2 rounded-full bg-sky-600 text-white cursor-pointer hover:bg-sky-700 transition-all duration-200"
-                    >
-                        <i className="fa-solid fa-chevron-right"></i> next
-                    </button>
-                </div>
+                <ReactPaginate
+                    breakLabel="..."
+                    onPageChange={handlePageClick}
+                    pageRangeDisplayed={4}
+                    pageCount={totalPages}
+                    nextLabel=">"
+                    previousLabel="<"
+                    activeClassName="text-white bg-sky-500 hover:bg-sky-500"
+                    containerClassName="flex"
+                    pageLinkClassName="w-full flex justify-center items-center"
+                    pageClassName="border w-10 h-10 flex justify-center items-center hover:bg-sky-50"
+                    breakClassName="border w-10 h-10 flex justify-center items-center hover:bg-sky-50"
+                    previousClassName="border w-10 h-10 flex justify-center items-center rounded-l-md hover:bg-sky-50"
+                    nextClassName="border w-10 h-10 flex justify-center items-center rounded-r-md hover:bg-sky-50"
+                />
                 <div className="text-center text-gray-400 text-sm">
-                    <p>@copyright joshua w - All rights reserved</p>
-                    <p>Built using: Nextjs /w Incremental Static Generation</p>
+                    <p>@copyright joshua william - 2024</p>
                 </div>
             </div>
+            {scrollable && (
+                <button
+                    onClick={scrollToTop}
+                    className="fixed w-12 h-12 right-6 bottom-6 bg-sky-600 text-white rounded-full flex justify-center items-center z-50  hover:bg-sky-700"
+                >
+                    <i className="fa-sharp fa-solid fa-arrow-up"></i>
+                </button>
+            )}
         </>
     );
 };
@@ -201,14 +193,14 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         });
         return {
             props: {
-                animes,
+                data: animes,
                 message: "data fetch succesful",
             },
         };
     } catch (e: any) {
         return {
             props: {
-                animes: [],
+                data: [],
                 message: "data fetch failed",
             },
         };

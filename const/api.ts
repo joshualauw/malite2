@@ -1,5 +1,5 @@
 // export const BASE_URL = "http://localhost:3000";
-export const BASE_URL = "https://malite2.netlify.app/";
+export const BASE_URL = "https://malite2.netlify.app";
 export const MAL_URL = "https://api.myanimelist.net/v2";
 export const AUTH_URL = "https://myanimelist.net/v1/oauth2";
 export const MAL_CLIENT_ID = "c599b4d5a1bd037ccaad1193c9cec996";

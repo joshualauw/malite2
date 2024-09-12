@@ -1,3 +1,4 @@
+import { Button } from "primereact/button";
 import { useEffect, useState } from "react";
 
 function ScrollTop() {
@@ -14,19 +15,19 @@ function ScrollTop() {
     }, []);
 
     const scrollToTop = () => {
-        document.body.scrollTop = 0;
-        document.documentElement.scrollTop = 0;
+        window.scrollTo({ top: 0, behavior: "smooth" });
     };
 
     if (!scrollable) return <></>;
 
     return (
-        <button
+        <Button
             onClick={scrollToTop}
-            className="fixed w-12 h-12 right-6 bottom-6 bg-sky-600 text-white rounded-full flex justify-center items-center z-50  hover:bg-sky-700"
-        >
-            <i className="fa-sharp fa-solid fa-arrow-up"></i>
-        </button>
+            size="small"
+            rounded
+            className="fixed right-6 bottom-6 bg-sky-600 "
+            icon="fa-solid fa-arrow-up"
+        />
     );
 }
 

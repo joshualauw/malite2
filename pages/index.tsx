@@ -6,9 +6,10 @@ import { useAuth } from "../hooks/useAuth";
 import { Anime } from "../types/Anime";
 import { User } from "../types/User";
 import AnimeCard from "../components/AnimeCard";
-import ReactPaginate from "react-paginate";
 import AnimeFilter from "../components/AnimeFilter";
 import ScrollTop from "../components/ScrollTop";
+import { Button } from "primereact/button";
+import { Paginator } from "primereact/paginator";
 
 interface HomePageProps {
     data: Anime[];
@@ -18,20 +19,14 @@ interface HomePageProps {
 const Home: NextPage<HomePageProps> = (props) => {
     const { requestAuthPermission, logout } = useAuth();
 
-    const [animes, setAnimes] = useState<Anime[]>(props.data);
+    const [animes, setAnimes] = useState<Anime[]>([]);
     const [reversed, setReversed] = useState<boolean>(false);
     const [sliceIndex, setSliceIndex] = useState<number>(0);
-    const [totalPages, setTotalPages] = useState(0);
 
     const sliceCount = 15;
 
-    useEffect(() => {
-        setTotalPages(Math.ceil(props.data.length / sliceCount));
-        console.log(props.user);
-    }, [props.data]);
-
     const handlePageClick = (event: any) => {
-        setSliceIndex(parseInt(event.selected) * sliceCount);
+        setSliceIndex(parseInt(event.page) * sliceCount);
         window.scrollTo({ top: 0 });
     };
 
@@ -43,7 +38,6 @@ const Home: NextPage<HomePageProps> = (props) => {
                     data={props.data}
                     setAnimes={setAnimes}
                     setSliceIndex={setSliceIndex}
-                    setTotalPages={setTotalPages}
                     sliceCount={sliceCount}
                     reversed={reversed}
                 />
@@ -51,53 +45,45 @@ const Home: NextPage<HomePageProps> = (props) => {
             <div className="m-6 md:m-8 space-y-8">
                 <div className="flex items-center justify-between">
                     <p className="font-bold text-xl">{animes.length} records found</p>
-                    <button
+                    <Button
                         onClick={() => setReversed(!reversed)}
-                        className="px-5 py-2 rounded-full bg-sky-600 text-white cursor-pointer hover:bg-sky-700 transition-all duration-200"
-                    >
-                        <i className="fa-solid fa-arrows-up-down"></i> reverse
-                    </button>
+                        icon="fa-solid fa-arrows-up-down"
+                        label="reverse"
+                        className="bg-sky-600"
+                        rounded
+                    />
                 </div>
                 {animes.length == 0 && <p className="text-center">-no anime found-</p>}
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
                     {animes.slice(sliceIndex, sliceIndex + sliceCount).map((anime) => (
                         <AnimeCard key={anime.id} anime={anime} />
                     ))}
                 </div>
-                <ReactPaginate
-                    breakLabel="..."
+                <Paginator
+                    first={sliceIndex}
+                    rows={sliceCount}
+                    totalRecords={animes.length}
                     onPageChange={handlePageClick}
-                    pageRangeDisplayed={4}
-                    pageCount={totalPages}
-                    nextLabel=">"
-                    previousLabel="<"
-                    activeClassName="text-white bg-sky-500 hover:bg-sky-500"
-                    containerClassName="flex"
-                    pageLinkClassName="w-full flex justify-center items-center"
-                    pageClassName="border w-10 h-10 flex justify-center items-center hover:bg-sky-50"
-                    breakClassName="border w-10 h-10 flex justify-center items-center hover:bg-sky-50"
-                    previousClassName="border w-10 h-10 flex justify-center items-center rounded-l-md hover:bg-sky-50"
-                    nextClassName="border w-10 h-10 flex justify-center items-center rounded-r-md hover:bg-sky-50"
                 />
                 {!props.user ? (
-                    <div className="flex flex-col">
+                    <div className="flex flex-col items-center">
                         <p className="text-center text-lg font-semibold">Login to view your list</p>
-                        <button
+                        <Button
                             onClick={requestAuthPermission}
-                            className="mt-2 self-center items-center text-white bg-sky-600 hover:bg-sky-700 rounded-md text-sm px-4 py-2"
-                        >
-                            Login with MAL
-                        </button>
+                            className="w-fit mt-3 bg-sky-600"
+                            label="Login with MAL"
+                        />
                     </div>
                 ) : (
-                    <div className="flex flex-col">
+                    <div className="flex flex-col items-center">
                         <p className="text-center text-lg font-semibold">logged in as {props.user.name}</p>
-                        <button
+                        <Button
                             onClick={logout}
-                            className="mt-2 self-center items-center text-white bg-red-600 hover:bg-red-700 rounded-md text-sm px-4 py-2"
-                        >
-                            Logout <i className="fa-solid fa-right-from-bracket ml-2"></i>
-                        </button>
+                            className="w-fit mt-3"
+                            label="Logout"
+                            severity="danger"
+                            icon="fa-solid fa-right-from-bracket"
+                        />
                     </div>
                 )}
                 <p className="text-gray-400 text-sm mt-4 text-center">@copyright joshua william - 2024</p>
@@ -109,20 +95,28 @@ const Home: NextPage<HomePageProps> = (props) => {
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
     const { getUserAnimeList } = useAnime();
-    const { authorize } = useAuth();
+    const { authorize, getMe } = useAuth();
 
     const props: HomePageProps = { data: [], user: null };
 
-    const user = await authorize(context.req.cookies.auth);
+    const token = authorize(context.req.cookies.auth);
 
-    if (user) {
-        try {
-            const res = await getUserAnimeList(user.token);
+    try {
+        const res = await getUserAnimeList(token);
+        if (res.status == 200 && res.data) {
             props.data = res.data;
-        } catch (e: any) {
-            console.error(e.response?.data || e.message);
         }
-        props.user = user;
+    } catch (e: any) {
+        console.error(e.response?.data || e.message);
+    }
+
+    try {
+        const res = await getMe(token);
+        if (res.status == 200 && res.data) {
+            props.user = res.data;
+        }
+    } catch (e: any) {
+        console.error(e.response?.data || e.message);
     }
 
     return { props };

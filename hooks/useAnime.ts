@@ -24,6 +24,7 @@ export function useAnime(limit: number = 1000) {
                 finished_date: d.list_status.finish_date || "-",
             }));
         }
+
         return res;
     }
 

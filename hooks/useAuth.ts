@@ -1,27 +1,28 @@
 import { AUTH_URL, BASE_URL, CODE_CHALLENGE, MAL_CLIENT_ID, MAL_CLIENT_SECRET, MAL_URL } from "../const/api";
 import { Credentials } from "../types/Credentials";
-import $axios from "../lib/axios";
 import { User } from "../types/User";
+import $axios from "../lib/axios";
 
 export function useAuth() {
-    async function authorize(credentials: any) {
+    function authorize(credentials: any) {
         const auth = JSON.parse(credentials || "{}") as Credentials;
+        return auth.access_token;
+    }
 
-        try {
-            const res = await getMe(auth.access_token);
-            if (res.status == 200 && res.data) {
-                res.data.token = auth.access_token;
-                return res.data;
-            }
-        } catch (e: any) {
-            console.error(e.response?.data || e.message);
-            //handle refresh token fallback
-            return null;
-        }
+    async function refreshToken(token: string) {
+        const params = new URLSearchParams();
+        params.append("grant_type", "refresh_token");
+        params.append("refresh_token", token);
+
+        return await $axios.post<Credentials>("/token", params, {
+            baseURL: AUTH_URL,
+            auth: { username: MAL_CLIENT_ID, password: MAL_CLIENT_SECRET },
+        });
     }
 
     async function logout() {
         await $axios.delete("/api/auth", { baseURL: BASE_URL });
+
         window.location.reload();
     }
 
@@ -58,5 +59,5 @@ export function useAuth() {
         });
     }
 
-    return { requestAuthPermission, login, getMe, authorize, logout };
+    return { requestAuthPermission, login, getMe, authorize, logout, refreshToken };
 }

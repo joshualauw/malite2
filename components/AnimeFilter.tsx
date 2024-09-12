@@ -5,12 +5,11 @@ interface AnimeFilterProps {
     data: Anime[];
     setAnimes: Dispatch<SetStateAction<Anime[]>>;
     setSliceIndex: Dispatch<SetStateAction<number>>;
-    setTotalPages: Dispatch<SetStateAction<number>>;
     sliceCount: number;
     reversed: boolean;
 }
 
-function AnimeFilter({ data, setAnimes, setSliceIndex, setTotalPages, sliceCount, reversed }: AnimeFilterProps) {
+function AnimeFilter({ data, setAnimes, setSliceIndex, sliceCount, reversed }: AnimeFilterProps) {
     const [searchTerm, setSearchTerm] = useState<string>("");
     const [sortTerm, setSortTerm] = useState<string>("Date");
     const [filterTerm, setFilterTerm] = useState<string>("All");
@@ -42,7 +41,6 @@ function AnimeFilter({ data, setAnimes, setSliceIndex, setTotalPages, sliceCount
         }
 
         setAnimes(filtered);
-        setTotalPages(Math.ceil(filtered.length / sliceCount));
     }, [searchTerm, filterTerm, reversed, sortTerm, data, sliceCount]);
 
     return (

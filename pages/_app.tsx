@@ -1,6 +1,10 @@
-import "../styles/globals.css";
 import Head from "next/head";
 import Script from "next/script";
+
+import { PrimeReactProvider } from "primereact/api";
+import Tailwind from "primereact/passthrough/tailwind";
+import "../styles/globals.css";
+import "primereact/resources/themes/lara-light-blue/theme.css";
 
 function MyApp({ Component, pageProps }) {
     return (
@@ -13,7 +17,10 @@ function MyApp({ Component, pageProps }) {
                 <link rel="icon" type="image/png" sizes="16x16" href="/img/favicon-16x16.png" />
             </Head>
             <Script src="https://kit.fontawesome.com/d5730f9cf6.js" crossOrigin="anonymous"></Script>
-            <Component {...pageProps} />
+
+            <PrimeReactProvider value={{ pt: Tailwind }}>
+                <Component {...pageProps} />
+            </PrimeReactProvider>
         </>
     );
 }

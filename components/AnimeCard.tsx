@@ -1,4 +1,5 @@
 /* eslint-disable @next/next/no-img-element */
+import { Card } from "primereact/card";
 import { Anime } from "../types/Anime";
 import dayjs from "dayjs";
 
@@ -22,15 +23,9 @@ function AnimeCard({ anime }: { anime: Anime }) {
     const link = `https://myanimelist.net/anime/${anime.id}`;
 
     return (
-        <div className="rounded-md p-4 border-2">
+        <Card>
             <div className="flex items-start space-x-4">
-                <a className="w-[150px] h-full" href={link} target="_blank" rel="noreferrer">
-                    <img
-                        src={anime.picture}
-                        className="w-full h-full object-cover bg-center cursor-pointer hover:brightness-90"
-                        alt={anime.title}
-                    />
-                </a>
+                <img src={anime.picture} className="w-[100px] h-[140px] object-cover bg-center" alt={anime.title} />
                 <div className="text-gray-500 w-full">
                     <a href={link} target="_blank" rel="noreferrer" className="font-semibold hover:underline">
                         {anime.title}
@@ -48,7 +43,7 @@ function AnimeCard({ anime }: { anime: Anime }) {
                 </div>
                 <i className="fa-solid fa-pen-to-square text-gray-600 cursor-pointer brightness-90"></i>
             </div>
-        </div>
+        </Card>
     );
 }
 

@@ -1,4 +1,4 @@
-export default interface Anime {
+export interface Anime {
     id: number;
     title: string;
     status: string;

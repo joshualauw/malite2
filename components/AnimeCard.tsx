@@ -1,5 +1,5 @@
 /* eslint-disable @next/next/no-img-element */
-import Anime from "../types/Anime";
+import { Anime } from "../types/Anime";
 import dayjs from "dayjs";
 
 function AnimeCard({ anime }: { anime: Anime }) {
@@ -32,12 +32,7 @@ function AnimeCard({ anime }: { anime: Anime }) {
                     />
                 </a>
                 <div className="text-gray-500 w-full">
-                    <a
-                        href={link}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="font-semibold hover:underline"
-                    >
+                    <a href={link} target="_blank" rel="noreferrer" className="font-semibold hover:underline">
                         {anime.title}
                     </a>
                     <p className="mt-3">Finished: {formatDate(anime.finished_date)}</p>

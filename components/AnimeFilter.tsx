@@ -23,7 +23,11 @@ function AnimeFilter({ data, setAnimes, setSliceIndex, sliceCount, reversed }: A
                     return 1;
                 }
             })
-            .filter((a) => a.title.toLowerCase().includes(searchTerm.toLowerCase()))
+            .filter(
+                (a) =>
+                    a.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    a.alternative_title.toLowerCase().includes(searchTerm.toLowerCase())
+            )
             .sort((a, b) => {
                 if (sortTerm == "title") {
                     return 0;

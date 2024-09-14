@@ -2,7 +2,6 @@ import Head from "next/head";
 import Script from "next/script";
 
 import { PrimeReactProvider } from "primereact/api";
-import Tailwind from "primereact/passthrough/tailwind";
 import "../styles/globals.css";
 import "primereact/resources/themes/lara-light-blue/theme.css";
 
@@ -18,7 +17,7 @@ function MyApp({ Component, pageProps }) {
             </Head>
             <Script src="https://kit.fontawesome.com/d5730f9cf6.js" crossOrigin="anonymous"></Script>
 
-            <PrimeReactProvider value={{ pt: Tailwind }}>
+            <PrimeReactProvider>
                 <Component {...pageProps} />
             </PrimeReactProvider>
         </>

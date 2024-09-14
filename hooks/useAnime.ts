@@ -1,12 +1,11 @@
 import { AxiosResponse } from "axios";
-import { BASE_URL, MAL_URL } from "../const/api";
 import { Anime, AnimeKeyword, EditAnimeInput } from "../types/Anime";
 import $axios from "../lib/axios";
 
 export function useAnime(limit: number = 1000) {
     async function getUserAnimeList(token: string): Promise<AxiosResponse<Anime[]>> {
         const res = await $axios.get(`/users/@me/animelist`, {
-            baseURL: MAL_URL,
+            baseURL: process.env.MAL_URL,
             params: {
                 limit,
                 fields: "list_status,alternative_titles,comments",
@@ -31,21 +30,21 @@ export function useAnime(limit: number = 1000) {
 
     async function updateAnime(anime_id: number, payload: EditAnimeInput) {
         return await $axios.post(`/api/anime`, payload, {
-            baseURL: BASE_URL,
+            baseURL: process.env.BASE_URL,
             params: { anime_id },
         });
     }
 
     async function deleteAnime(anime_id: number) {
         return await $axios.delete(`/api/anime`, {
-            baseURL: BASE_URL,
+            baseURL: process.env.BASE_URL,
             params: { anime_id },
         });
     }
 
     async function getAnimeByKeyword(query: string) {
         return await $axios.get<AnimeKeyword[]>(`/api/anime`, {
-            baseURL: BASE_URL,
+            baseURL: process.env.BASE_URL,
             params: { query },
         });
     }

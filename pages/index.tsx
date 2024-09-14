@@ -129,22 +129,24 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
     const token = authorize(context.req.cookies.auth);
 
-    try {
-        const res = await getUserAnimeList(token);
-        if (res.status == 200 && res.data) {
-            props.data = res.data;
+    if (token) {
+        try {
+            const res = await getUserAnimeList(token);
+            if (res.status == 200 && res.data) {
+                props.data = res.data;
+            }
+        } catch (e: any) {
+            console.error(e.response?.data || e.message);
         }
-    } catch (e: any) {
-        console.error(e.response?.data || e.message);
-    }
 
-    try {
-        const res = await getMe(token);
-        if (res.status == 200 && res.data) {
-            props.user = res.data;
+        try {
+            const res = await getMe(token);
+            if (res.status == 200 && res.data) {
+                props.user = res.data;
+            }
+        } catch (e: any) {
+            console.error(e.response?.data || e.message);
         }
-    } catch (e: any) {
-        console.error(e.response?.data || e.message);
     }
 
     return { props };

@@ -1,6 +1,5 @@
 import axios from "axios";
 import https from "https";
-import { MAL_CLIENT_ID } from "../const/api";
 
 const $axios = axios.create({
     httpsAgent: new https.Agent({
@@ -8,6 +7,6 @@ const $axios = axios.create({
     }),
 });
 
-$axios.defaults.headers["X-MAL-CLIENT-ID"] = MAL_CLIENT_ID;
+$axios.defaults.headers["X-MAL-CLIENT-ID"] = process.env.MAL_CLIENT_ID;
 
 export default $axios;

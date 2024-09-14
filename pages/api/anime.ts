@@ -1,5 +1,4 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { MAL_CLIENT_ID, MAL_URL } from "../../const/api";
 import { AxiosError } from "axios";
 import $axios from "../../lib/axios";
 import { useAuth } from "../../hooks/useAuth";
@@ -10,12 +9,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (req.method == "GET") {
         try {
             const result = await $axios.get(`/anime`, {
-                baseURL: MAL_URL,
+                baseURL: process.env.MAL_URL,
                 params: {
                     q: req.query.query,
                     limit: 10,
                 },
-                headers: { "X-MAL-CLIENT-ID": MAL_CLIENT_ID },
             });
 
             if (result.status == 200 && result.data) {
@@ -45,7 +43,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             if (req.body.finish_date) params.append("finish_date", req.body.finish_date);
 
             const result = await $axios.patch(`/anime/${req.query.anime_id}/my_list_status`, params, {
-                baseURL: MAL_URL,
+                baseURL: process.env.MAL_URL,
                 headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/x-www-form-urlencoded" },
             });
 
@@ -64,7 +62,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             const token = authorize(req.cookies["auth"]);
 
             const result = await $axios.delete(`/anime/${req.query.anime_id}/my_list_status`, {
-                baseURL: MAL_URL,
+                baseURL: process.env.MAL_URL,
                 headers: { Authorization: `Bearer ${token}` },
             });
 

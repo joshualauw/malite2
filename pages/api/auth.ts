@@ -1,8 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { useAuth } from "../../hooks/useAuth";
-import { BASE_URL } from "../../const/api";
-import Cookies from "cookies";
 import { AxiosError } from "axios";
+import Cookies from "cookies";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     const { login } = useAuth();
@@ -19,7 +18,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 console.error(e.response?.data || e.message);
             }
         }
-        res.status(308).redirect(BASE_URL);
+        res.status(308).redirect(process.env.BASE_URL);
     }
 
     if (req.method == "PUT") {

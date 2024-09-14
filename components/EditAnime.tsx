@@ -6,7 +6,6 @@ import { AutoComplete, AutoCompleteCompleteEvent, AutoCompleteSelectEvent } from
 import { Button } from "primereact/button";
 import { Rating } from "primereact/rating";
 import { Dropdown } from "primereact/dropdown";
-import { InputTextarea } from "primereact/inputtextarea";
 import { Calendar } from "primereact/calendar";
 import dayjs from "dayjs";
 
@@ -26,16 +25,22 @@ function EditAnime({ modal, setModal, setEditing, editing, ownedAnimes }: EditAn
     const [status, setStatus] = useState<string>("watching");
     const [owned, setOwned] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(false);
-    const [finishDate, setFinishDate] = useState<Date>(dayjs().toDate());
+    const [finishDate, setFinishDate] = useState<Date>(null);
 
     const statusOptions = ["watching", "on_hold", "dropped", "completed", "plan_to_watch"];
+
+    useEffect(() => {
+        if (score == null) {
+            setScore(0);
+        }
+    }, [score]);
 
     useEffect(() => {
         if (!modal) {
             setSelected(null);
             setScore(0);
             setStatus("watching");
-            setFinishDate(dayjs().toDate());
+            setFinishDate(null);
 
             setOwned(false);
             setEditing(null);
@@ -49,7 +54,9 @@ function EditAnime({ modal, setModal, setEditing, editing, ownedAnimes }: EditAn
             setModal(true);
             setScore(editing.score);
             setStatus(editing.status);
-            setFinishDate(dayjs(editing.finished_date).toDate());
+            if (editing.finished_date != "-") {
+                setFinishDate(dayjs(editing.finished_date).toDate());
+            }
         }
     }, [editing]);
 
@@ -77,7 +84,7 @@ function EditAnime({ modal, setModal, setEditing, editing, ownedAnimes }: EditAn
         const res = await updateAnime(selected.id, {
             score,
             status,
-            finish_date: dayjs(finishDate).format("YYYY-MM-DD"),
+            finish_date: finishDate ? dayjs(finishDate).format("YYYY-MM-DD") : null,
         });
 
         if (res.status == 201) {
@@ -149,14 +156,13 @@ function EditAnime({ modal, setModal, setEditing, editing, ownedAnimes }: EditAn
 
             {selected && (
                 <div className="space-y-4 mt-8">
-                    <div>
-                        <span>Score: ({score}/10)</span>
+                    <div className="flex flex-col md:flex-row">
+                        <span className="mb-2 md:mb-0">Score: ({score}/10)</span>
                         <Rating
                             value={score}
                             onChange={(e) => setScore(e.value)}
                             stars={10}
-                            cancel={false}
-                            className="inline-flex ml-4"
+                            className="block md:inline-flex md:ml-4"
                         />
                     </div>
                     <div>
@@ -169,8 +175,13 @@ function EditAnime({ modal, setModal, setEditing, editing, ownedAnimes }: EditAn
                         />
                     </div>
                     <div>
-                        <div className="mb-2">Finished Date:</div>
-                        <Calendar value={finishDate} onChange={(e) => setFinishDate(e.value)} className="w-full" />
+                        <p className="mb-2">Finished Date:</p>
+                        <Calendar
+                            value={finishDate}
+                            onChange={(e) => setFinishDate(e.value)}
+                            showButtonBar
+                            className="w-full"
+                        />
                     </div>
                 </div>
             )}

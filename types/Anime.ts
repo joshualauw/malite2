@@ -13,5 +13,5 @@ export type AnimeKeyword = Pick<Anime, "id" | "title" | "picture">;
 export interface EditAnimeInput {
     score: number;
     status: string;
-    finish_date: string;
+    finish_date: string | null;
 }

@@ -38,8 +38,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             const token = authorize(req.cookies["auth"]);
 
             const params = new URLSearchParams();
-            if (req.body.status) params.append("status", req.body.status);
-            if (req.body.score) params.append("score", req.body.score);
+            params.append("status", req.body.status);
+            params.append("score", req.body.score);
             if (req.body.finish_date) params.append("finish_date", req.body.finish_date);
 
             const result = await $axios.patch(`/anime/${req.query.anime_id}/my_list_status`, params, {
